@@ -7,74 +7,110 @@
  */
 
 /**
- * Implementation of hook_perm().
+ * Implements hook_permission().
  */
-function capn_hook_perm() {
-  return array('sail the seven seas');
+function capn_hook_permission() {
+  return array(
+    'sail the seven seas' => array(
+      'title' => t('Sail the seven seas'),
+      'description' => t('Allows users to select whether or not they are a pirate.'),
+    ),
+  );
 }
 
 /**
- * Implementation of hook_nodeapi().
+ * Implements hook_node_view().
  */
-function capn_hook_nodeapi(&$node, $op, $teaser = TRUE, $page = FALSE) {
-  switch ($op) {
-    case 'view':
-      if ($page) {
-        $_SESSION['node_views'][$node->nid]++;
-        
-        $node->content['node_views'] = array(
-          '#value' => t('You have viewed this page %num times', array('%num' => $_SESSION['node_views'][$node->nid])),
-          '#weight' => 10,
-        );
-      }
+function capn_hook_node_view($node, $view_mode) {
+  if ($view_mode == 'full') {
+    $_SESSION['node_views'][$node->nid]++;
+
+    $node->content['node_views'] = array(
+      '#markup' => t('You have viewed this page %num times.',
+        array('%num' => $_SESSION['node_views'][$node->nid])),
+      '#weight' => 10,
+    );
+
   }
 }
 
 /**
- * Implementation of hook_user().
+ * Implements hook_user_view().
  */
-function capn_hook_user($op, &$edit, &$account) {
-  switch ($op) {
-    case 'form':
-      if (user_access('sail the seven seas')) {
-        $form = array();
-        $form['is_pirate'] = array(
-          '#type' => 'radios',
-          '#title' => t('I am a pirate'),
-          '#options' => array(0 => t('No'), 1 => t('Yes')),
-          '#default_value' => $edit['is_pirate'],
-        );
-      }
-      return $form;
-    case 'view':
-      if ($account->is_pirate) {
-        $account->content['capn_hook'] = array(
-          '#type' => 'user_profile_item',
-          '#title' => t('Yarr!'),
-          '#value' => theme('capn_hook_user', $account),
-          '#weight' => 10,
-        );
-      }
-      break;
+function capn_hook_user_view($account, $view_mode) {
+  if ($view_mode == 'full') {
+    $output = theme('capn_hook_user', array('account' => $account));
+
+    if ($output) {
+      $account->content['capn_hook'] = array(
+        '#type' => 'user_profile_item',
+        '#title' => t('Yarrr!'),
+        '#markup' => $output,
+        '#weight' => 10,
+      );
+    }
+
   }
 }
 
 /**
- * Implementation of hook_theme()
+ * Implementation of hook_user_load().
+ */
+function capn_hook_user_load($users) {
+  global $user;
+
+  $users[$user->uid]->is_pirate = $_SESSION['is_pirate'];
+}
+
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function capn_hook_form_user_profile_form_alter(&$form, &$form_state) {
+  $default = isset($_SESSION['is_pirate']) ? $_SESSION['is_pirate'] : 0;
+
+  $form['account']['is_pirate'] = array(
+    '#type' => 'radios',
+    '#title' => t('Are you a pirate?'),
+    '#options' => array(0 => t('No'), 1 => t('Yes')),
+    '#default_value' => $default,
+  );
+  $form['#submit'][] = 'capn_hook_user_edit_form_submit';
+
+  return $form;
+}
+
+/**
+ * Custom submission handler for user edit form.
+ */
+function capn_hook_user_edit_form_submit($form, &$form_state) {
+  $_SESSION['is_pirate'] = (int) $form_state['values']['is_pirate'];
+}
+
+/**
+ * Implements hook_theme().
  */
 function capn_hook_theme() {
   return array(
-    'capn_hook_user' => array(
-      'arguments' => array('account' => NULL)
-    )
+   'capn_hook_user' => array(
+      'variables' => array('account' => NULL),
+    ),
   );
 }
 
 /**
  * Theme function for the user page.
  */
-function theme_capn_hook_user($account) {
-  $output = '<img src="http://tinyurl.com/279qnf" alt="ahoy!" />';   
+function theme_capn_hook_user($variables) {
+  $output = '';
+
+  if ($variables['account']->is_pirate) {
+    $variables['path'] = 'http://tinyurl.com/279qnf';
+    $variables['alt'] = 'ahoy!';
+    $variables['getsize'] = FALSE;
+
+    $output .= theme('image', $variables); 
+  }
+
   return $output;
 }
-
