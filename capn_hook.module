@@ -20,10 +20,10 @@ function capn_hook_nodeapi(&$node, $op, $teaser = TRUE, $page = FALSE) {
   switch ($op) {
     case 'view':
       if ($page) {
-        $_SESSION['node_views'][$node->nid]++;
+        $_SESSION['capn_hook_stats'][$node->nid]++;
         
-        $node->content['node_views'] = array(
-          '#value' => t('You have viewed this page %num times', array('%num' => $_SESSION['node_views'][$node->nid])),
+        $node->content['capn_hook_stats'] = array(
+          '#value' => t('You have viewed this page %num times', array('%num' => $_SESSION['capn_hook_stats'][$node->nid])),
           '#weight' => 10,
         );
       }
@@ -46,6 +46,8 @@ function capn_hook_user($op, &$edit, &$account) {
         );
       }
       return $form;
+      break;
+      
     case 'view':
       if ($account->is_pirate) {
         $account->content['capn_hook'] = array(
@@ -71,7 +73,7 @@ function capn_hook_theme() {
 }
 
 /**
- * Theme function for the user page.
+ * Theme 'capn_hook_user' to just output a picture of Captain Hook.
  */
 function theme_capn_hook_user($account) {
   $output = '<img src="http://tinyurl.com/279qnf" alt="ahoy!" />';   
