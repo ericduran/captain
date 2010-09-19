@@ -1,5 +1,0 @@
-; $Id$
-name = "Cap'n Hook"
-description = "Exploring Drupal's hook system"
-core = 6.x
-package = Lullabot Examples
