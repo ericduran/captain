@@ -1,15 +1,14 @@
 <?php
-// $Id$
 
 /**
  * @file
- * The main module file for capn_hook module.
+ * The main module file for captain module.
  */
 
 /**
  * Implements hook_permission().
  */
-function capn_hook_permission() {
+function captain_permission() {
   return array(
     'sail the seven seas' => array(
       'title' => t('Sail the seven seas'),
@@ -21,7 +20,7 @@ function capn_hook_permission() {
 /**
  * Implements hook_node_view().
  */
-function capn_hook_node_view($node, $view_mode) {
+function captain_node_view($node, $view_mode) {
   if ($view_mode == 'full') {
     $_SESSION['node_views'][$node->nid]++;
 
@@ -37,12 +36,12 @@ function capn_hook_node_view($node, $view_mode) {
 /**
  * Implements hook_user_view().
  */
-function capn_hook_user_view($account, $view_mode) {
+function captain_user_view($account, $view_mode) {
   if ($view_mode == 'full') {
-    $output = theme('capn_hook_user', array('account' => $account));
+    $output = theme('captain_user', array('account' => $account));
 
     if ($output) {
-      $account->content['capn_hook'] = array(
+      $account->content['captain'] = array(
         '#type' => 'user_profile_item',
         '#title' => t('Yarrr!'),
         '#markup' => $output,
@@ -56,7 +55,7 @@ function capn_hook_user_view($account, $view_mode) {
 /**
  * Implementation of hook_user_load().
  */
-function capn_hook_user_load($users) {
+function captain_user_load($users) {
   global $user;
 
   $users[$user->uid]->is_pirate = $_SESSION['is_pirate'];
@@ -66,7 +65,7 @@ function capn_hook_user_load($users) {
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function capn_hook_form_user_profile_form_alter(&$form, &$form_state) {
+function captain_form_user_profile_form_alter(&$form, &$form_state) {
   $default = isset($_SESSION['is_pirate']) ? $_SESSION['is_pirate'] : 0;
 
   $form['account']['is_pirate'] = array(
@@ -75,7 +74,7 @@ function capn_hook_form_user_profile_form_alter(&$form, &$form_state) {
     '#options' => array(0 => t('No'), 1 => t('Yes')),
     '#default_value' => $default,
   );
-  $form['#submit'][] = 'capn_hook_user_edit_form_submit';
+  $form['#submit'][] = 'captain_user_edit_form_submit';
 
   return $form;
 }
@@ -83,16 +82,16 @@ function capn_hook_form_user_profile_form_alter(&$form, &$form_state) {
 /**
  * Custom submission handler for user edit form.
  */
-function capn_hook_user_edit_form_submit($form, &$form_state) {
+function captain_user_edit_form_submit($form, &$form_state) {
   $_SESSION['is_pirate'] = (int) $form_state['values']['is_pirate'];
 }
 
 /**
  * Implements hook_theme().
  */
-function capn_hook_theme() {
+function captain_theme() {
   return array(
-   'capn_hook_user' => array(
+   'captain_user' => array(
       'variables' => array('account' => NULL),
     ),
   );
@@ -101,7 +100,7 @@ function capn_hook_theme() {
 /**
  * Theme function for the user page.
  */
-function theme_capn_hook_user($variables) {
+function theme_captain_user($variables) {
   $output = '';
 
   if ($variables['account']->is_pirate) {

@@ -1,6 +1,4 @@
-; $Id$
-name = "Cap'n Hook"
+name = "Captain"
 description = "Exploring Drupal's hook system"
 core = 7.x
 package = Example
-files[] = capn_hook.module
